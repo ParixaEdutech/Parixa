@@ -3,11 +3,13 @@ import { Search, Plus, Edit2, Trash2 } from 'lucide-react';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Modal from '../../components/common/Modal';
+import { userService } from '../../services/userService';
 
 const UserManagement = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Mock data
     const [users, setUsers] = useState([
@@ -33,10 +35,44 @@ const UserManagement = () => {
         setIsModalOpen(true);
     };
 
-    const handleSaveUser = (e) => {
+    const handleSaveUser = async (e) => {
         e.preventDefault();
-        // Logic to save/update user
-        setIsModalOpen(false);
+        
+        const formData = new FormData(e.target);
+        const userData = {
+            name: formData.get('userName'),
+            email: formData.get('userEmail'),
+            role: formData.get('userRole')
+        };
+
+        try {
+            setIsSubmitting(true);
+            
+            if (!selectedUser) {
+                // Add new user via backend
+                const response = await userService.createUser(userData);
+                
+                // Update local state temporarily so it reflects 
+                const newUser = {
+                    id: response.userId || Date.now(),
+                    name: userData.name,
+                    email: userData.email,
+                    role: userData.role,
+                    status: 'active'
+                };
+                setUsers([...users, newUser]);
+                alert(`${userData.role} successfully registered! Passwords sent via email.`);
+            } else {
+                // Placeholder for editing logic
+                alert('Editing user details backend connection not yet implemented.');
+            }
+            setIsModalOpen(false);
+        } catch (error) {
+            console.error('Error saving user:', error);
+            alert(error.response?.data?.message || 'Error registering user.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleDelete = (id) => {
@@ -147,12 +183,14 @@ const UserManagement = () => {
                 <form onSubmit={handleSaveUser} className="space-y-4">
                     <Input
                         label="Full Name"
+                        name="userName"
                         defaultValue={selectedUser?.name || ''}
                         required
                     />
                     <Input
                         label="Email Address"
                         type="email"
+                        name="userEmail"
                         defaultValue={selectedUser?.email || ''}
                         required
                     />
@@ -160,6 +198,7 @@ const UserManagement = () => {
                     <div className="flex flex-col">
                         <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                         <select
+                            name="userRole"
                             className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border p-2"
                             defaultValue={selectedUser?.role || 'student'}
                         >
@@ -170,11 +209,11 @@ const UserManagement = () => {
                     </div>
 
                     <div className="flex justify-end space-x-3 mt-6">
-                        <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>
+                        <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)} disabled={isSubmitting}>
                             Cancel
                         </Button>
-                        <Button type="submit">
-                            Save User
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? 'Saving...' : 'Save User'}
                         </Button>
                     </div>
                 </form>

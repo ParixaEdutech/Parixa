@@ -3,10 +3,12 @@ const User = require('../models/User');
 const sendEmail = require('../utils/sendEmail');
 const router = express.Router();
 
+const { protect, adminOnly } = require('../middleware/authMiddleware');
+
 // Route: POST /api/admin/register
 // Desc : Admin registers a new student or teacher
-// Note : Should ideally be protected so only Admins can access it later!
-router.post('/register', async (req, res) => {
+// Note : Protected so only authenticated Admins can access it
+router.post('/register', protect, adminOnly, async (req, res) => {
     try {
         const { name, email, role } = req.body;
 

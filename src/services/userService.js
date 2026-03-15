@@ -8,7 +8,7 @@ export const userService = {
     },
 
     createUser: async (userData) => {
-        const response = await api.post('/users', userData);
+        const response = await api.post('/admin/register', userData);
         return response.data;
     },
 
