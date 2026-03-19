@@ -49,7 +49,7 @@ router.post('/generate-pdf', protect, aiLimiter, upload.single('document'), asyn
         const extractedText = await aiService.extractTextFromPDF(req.file.buffer);
 
         // Step 2: Push it straight into the Gemini pipeline and distribute into sets
-        const setsOfQuestions = await aiService.generateQuestions(extractedText, topic, numSets, easyCount, mediumCount, hardCount);
+        const setsOfQuestions = await aiService.extractQuestionsFromBank(extractedText, topic, numSets, easyCount, mediumCount, hardCount);
 
         res.json(setsOfQuestions);
     } catch (err) {

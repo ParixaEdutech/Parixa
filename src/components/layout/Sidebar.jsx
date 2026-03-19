@@ -28,9 +28,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
     const teacherLinks = [
         { name: 'Dashboard', path: '/teacher/dashboard', icon: 'dashboard' },
-        { name: 'Create Shell', path: '/teacher/exam/create', icon: 'exams' },
-        { name: 'ParixaAI Magic', path: '/teacher/generate-syllabus', icon: 'analytics' },
-        { name: 'Upload PDF', path: '/teacher/upload-pdf', icon: 'exams' },
+        { name: 'Create Exam', path: '/teacher/exam/create', icon: 'exams' },
         { name: 'Schedule Exam', path: '/teacher/exam/schedule', icon: 'calendar' },
         { name: 'Results', path: '/teacher/results', icon: 'analytics' }
     ];

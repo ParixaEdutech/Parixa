@@ -157,6 +157,86 @@ const aiService = {
 
             return fallbackQuestions.sort((a, b) => a.setNumber - b.setNumber);
         }
+    },
+
+    // 3. Extract, Solve & Classify from an uploaded Question Bank PDF
+    extractQuestionsFromBank: async (textContext, topic, numSets, easyCount, mediumCount, hardCount) => {
+        const model = getModel();
+        
+        // Over-generate by 20% for the Swap Buffer mechanics
+        const easyTarget = Math.ceil(easyCount * 1.2);
+        const mediumTarget = Math.ceil(mediumCount * 1.2);
+        const hardTarget = Math.ceil(hardCount * 1.2);
+
+        const totalEasy = easyTarget * numSets;
+        const totalMedium = mediumTarget * numSets;
+        const totalHard = hardTarget * numSets;
+        const totalCount = totalEasy + totalMedium + totalHard;
+
+        const prompt = `
+            You are an expert exam extraction AI. The user has uploaded raw text extracted from a PDF Question Bank or previous Exam Paper.
+            
+            YOUR MISSION:
+            1. Find and extract AT LEAST ${totalCount} valid multiple choice questions from the provided text.
+            2. For each extracted question, you MUST determine the Correct Answer. If an answer key is provided in the text, use it. If not, use your vast intellect to solve the question and mark the correct option.
+            3. You must classify the difficulty of the questions you extract based on complexity.
+            
+            We require exactly this distribution from the extracted questions:
+            - EXACTLY ${totalEasy} questions classified as "easy".
+            - EXACTLY ${totalMedium} questions classified as "medium".
+            - EXACTLY ${totalHard} questions classified as "hard".
+            
+            NOTE: If the source text does not have enough questions, you may generate new high-quality questions in the exact style of the uploaded questions to comfortably meet the quota.
+
+            SOURCE QUESTION BANK RAW TEXT:
+            ${textContext.substring(0, 50000)}
+        `;
+
+        try {
+            const result = await model.generateContent({
+                contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: apiSchema,
+                    temperature: 0.1 // Extremely low temperature to force strict extraction rather than creative hallucination
+                }
+            });
+
+            const responseText = result.response.text();
+            let rawQuestions = JSON.parse(responseText);
+
+            // POST-PROCESSING: Neatly divide the extracted questions strictly across the requested sets
+            const distributedQuestions = [];
+            const assignmentCounts = {};
+            for(let i = 1; i <= numSets; i++) assignmentCounts[i] = { easy: 0, medium: 0, hard: 0 };
+            
+            const tracking = { easy: 1, medium: 1, hard: 1 };
+
+            rawQuestions.forEach((q) => {
+                const assignedSet = tracking[q.difficulty];
+                
+                let isReserve = false;
+                if (q.difficulty === 'easy' && assignmentCounts[assignedSet].easy >= easyCount) isReserve = true;
+                if (q.difficulty === 'medium' && assignmentCounts[assignedSet].medium >= mediumCount) isReserve = true;
+                if (q.difficulty === 'hard' && assignmentCounts[assignedSet].hard >= hardCount) isReserve = true;
+
+                assignmentCounts[assignedSet][q.difficulty]++;
+
+                distributedQuestions.push({
+                    ...q,
+                    setNumber: assignedSet,
+                    isReserve: isReserve,
+                    id: Date.now() + Math.random().toString(36).substring(7)
+                });
+
+                tracking[q.difficulty] = tracking[q.difficulty] >= numSets ? 1 : tracking[q.difficulty] + 1;
+            });
+
+            return distributedQuestions.sort((a, b) => a.setNumber - b.setNumber);
+        } catch (error) {
+            console.error('Gemini Extraction Error:', error.message);
+            throw new Error('Failed to cleanly extract and classify the required number of questions from the PDF. The file may be unreadable or empty.');
+        }
     }
 };
 
