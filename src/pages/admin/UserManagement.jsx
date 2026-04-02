@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, Trash2, Upload } from 'lucide-react';
-import Button from '../../components/common/Button';
+import { Search, Plus, Edit2, Trash2, Upload, User, ShieldCheck } from 'lucide-react';
 import Input from '../../components/common/Input';
 import Modal from '../../components/common/Modal';
 import { userService } from '../../services/userService';
@@ -18,16 +17,14 @@ const UserManagement = () => {
     const [users, setUsers] = useState([]);
     const [isLoadingUsers, setIsLoadingUsers] = useState(true);
 
-    // Fetch real data from MongoDB
     useEffect(() => {
         const fetchUsers = async () => {
             try {
                 const data = await userService.getAllUsers();
-                // Map _id to id for the frontend
                 const formattedUsers = data.map(user => ({
                     ...user,
                     id: user._id, 
-                    status: 'active' // Since status isn't built into model yet
+                    status: 'active'
                 }));
                 setUsers(formattedUsers);
             } catch (error) {
@@ -49,7 +46,6 @@ const UserManagement = () => {
             const text = event.target.result;
             const rows = text.split(/\r?\n/).filter(row => row.trim() !== '');
             
-            // Assume format: Name,Email,Class (skip header if it contains "email")
             const startIndex = rows[0].toLowerCase().includes('email') ? 1 : 0;
             const userData = rows.slice(startIndex).map(row => {
                 const parts = row.split(',');
@@ -72,7 +68,7 @@ const UserManagement = () => {
                 setIsBulkImporting(true);
                 const res = await api.post('/admin/register-bulk', { users: userData });
                 alert(`Bulk Import Complete: ${res.data.details.filter(d => d.status === 'success').length} succeeded.`);
-                window.location.reload(); // Refresh to see new users
+                window.location.reload(); 
             } catch (err) {
                 alert("Bulk Import Failed: " + (err.response?.data?.message || err.message));
             } finally {
@@ -122,10 +118,8 @@ const UserManagement = () => {
             setIsSubmitting(true);
             
             if (!selectedUser) {
-                // Add new user via backend
                 const response = await userService.createUser(userData);
                 
-                // Update local state temporarily so it reflects 
                 const newUser = {
                     id: response.userId || Date.now(),
                     name: userData.name,
@@ -164,155 +158,146 @@ const UserManagement = () => {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-                <div className="flex gap-3">
-                    <input 
-                        type="file" 
-                        id="csvInputStudent" 
-                        accept=".csv" 
-                        className="hidden" 
-                        onChange={(e) => handleCSVUpload(e, 'student')}
-                    />
-                    <input 
-                        type="file" 
-                        id="csvInputTeacher" 
-                        accept=".csv" 
-                        className="hidden" 
-                        onChange={(e) => handleCSVUpload(e, 'teacher')}
-                    />
-                    <div className="flex bg-indigo-50 rounded-md border border-indigo-200 overflow-hidden">
-                        <Button 
-                            variant="secondary" 
-                            onClick={() => document.getElementById('csvInputStudent').click()}
-                            isLoading={isBulkImporting}
-                            className="flex items-center text-indigo-700 bg-transparent hover:bg-indigo-100 border-none rounded-none border-r border-indigo-200"
-                        >
-                            <Upload size={16} className="mr-2" /> Students (CSV)
-                        </Button>
-                        <Button 
-                            variant="secondary" 
-                            onClick={() => document.getElementById('csvInputTeacher').click()}
-                            isLoading={isBulkImporting}
-                            className="flex items-center text-indigo-700 bg-transparent hover:bg-indigo-100 border-none rounded-none"
-                        >
-                            <Upload size={16} className="mr-2" /> Teachers (CSV)
-                        </Button>
+        <div className="pb-8">
+            <div className="p-4 sm:p-8 space-y-8 flex-1">
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-2 sm:px-4">
+                    <div className="flex flex-col gap-2">
+                        <h1 className="text-3xl sm:text-4xl font-black text-gray-800 tracking-tight">Identity Access Hub</h1>
+                        <p className="text-sm font-medium text-gray-500">Manage all users, roles, and CSV imports.</p>
                     </div>
-                    <Button onClick={handleAddNew} className="flex items-center bg-indigo-600">
-                        <Plus size={16} className="mr-2" /> Add New User
-                    </Button>
-                </div>
-            </div>
-
-            <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-                {/* Toolbar */}
-                <div className="p-4 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div className="relative w-full sm:w-64">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Search size={16} className="text-gray-400" />
+                    
+                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                        <input type="file" id="csvInputStudent" accept=".csv" className="hidden" onChange={(e) => handleCSVUpload(e, 'student')} />
+                        <input type="file" id="csvInputTeacher" accept=".csv" className="hidden" onChange={(e) => handleCSVUpload(e, 'teacher')} />
+                        
+                        <div className="flex bg-white/80 rounded-full shadow-sm border border-white overflow-hidden">
+                            <button 
+                                onClick={() => document.getElementById('csvInputStudent').click()}
+                                disabled={isBulkImporting}
+                                className="px-4 py-3.5 sm:py-4 bg-transparent hover:bg-gray-100/50 text-[10px] sm:text-xs font-black text-gray-600 uppercase tracking-widest transition-all border-r border-gray-200 flex items-center justify-center gap-2"
+                            >
+                                <Upload size={14} /> Students
+                            </button>
+                            <button 
+                                onClick={() => document.getElementById('csvInputTeacher').click()}
+                                disabled={isBulkImporting}
+                                className="px-4 py-3.5 sm:py-4 bg-transparent hover:bg-gray-100/50 text-[10px] sm:text-xs font-black text-gray-600 uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                            >
+                                <Upload size={14} /> Teachers
+                            </button>
                         </div>
-                        <input
-                            type="text"
-                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            placeholder="Search users..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <div className="flex gap-2 w-full sm:w-auto">
-                        <select 
-                            value={roleFilter}
-                            onChange={(e) => setRoleFilter(e.target.value)}
-                            className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        >
-                            <option value="all">All Roles</option>
-                            <option value="student">Students</option>
-                            <option value="teacher">Teachers</option>
-                            <option value="admin">Admins</option>
-                        </select>
+                        
+                        <button onClick={handleAddNew} className="px-4 py-3.5 sm:py-4 rounded-full font-black tracking-widest text-[10px] sm:text-xs text-white shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 bg-gradient-to-r from-[#FF8E75] to-[#FF5E8E] hover:shadow-[0_8px_20px_rgba(255,94,142,0.3)] flex items-center justify-center gap-2 uppercase">
+                            <Plus size={14} /> Add System User
+                        </button>
                     </div>
                 </div>
 
-                {/* Table */}
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class/Div</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {isLoadingUsers ? (
+                {/* Main Directory Area */}
+                <div className="bg-[#EBEBEF] rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 shadow-[inset_0_2px_10px_rgba(255,255,255,0.9),0_10px_30px_rgba(0,0,0,0.05)] border border-white/40 flex flex-col">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 px-2 gap-4">
+                        <div className="flex items-center text-gray-400 text-sm pl-4 w-full sm:w-64 bg-white/40 rounded-full py-2 shadow-sm border border-white">
+                            <Search size={16} className="mr-2 shrink-0" />
+                            <input 
+                                type="text" 
+                                placeholder="Search the directory..." 
+                                className="bg-transparent outline-none placeholder-gray-400 text-gray-700 w-full font-medium" 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        
+                        <div className="relative">
+                            <select 
+                                value={roleFilter}
+                                onChange={(e) => setRoleFilter(e.target.value)}
+                                className="px-4 py-3 bg-white/60 backdrop-blur-sm rounded-full text-[10px] sm:text-[11px] font-black tracking-wider uppercase shadow-sm border border-white/50 text-gray-700 outline-none appearance-none pr-8 cursor-pointer hover:bg-white transition-colors"
+                            >
+                                <option value="all">All Access Tiers</option>
+                                <option value="student">Student Level</option>
+                                <option value="teacher">Teacher Level</option>
+                                <option value="admin">Admin Level</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div className="bg-white/30 p-2 sm:p-4 rounded-3xl border border-white/50 backdrop-blur-sm overflow-x-auto min-h-[400px]">
+                        <table className="w-full text-left border-collapse min-w-[800px]">
+                            <thead>
                                 <tr>
-                                    <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
-                                        Loading users...
-                                    </td>
+                                    <th className="px-6 py-4 text-[10px] sm:text-[11px] font-black uppercase text-gray-500 tracking-widest border-b border-white/40">Identity Record</th>
+                                    <th className="px-6 py-4 text-[10px] sm:text-[11px] font-black uppercase text-gray-500 tracking-widest border-b border-white/40">Authorization</th>
+                                    <th className="px-6 py-4 text-[10px] sm:text-[11px] font-black uppercase text-gray-500 tracking-widest border-b border-white/40">Division</th>
+                                    <th className="px-6 py-4 text-[10px] sm:text-[11px] font-black uppercase text-gray-500 tracking-widest border-b border-white/40">State</th>
+                                    <th className="px-6 py-4 text-[10px] sm:text-[11px] font-black uppercase text-gray-500 tracking-widest border-b border-white/40 text-right">Actions</th>
                                 </tr>
-                            ) : filteredUsers.map((user) => (
-                                <tr key={user.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <div className="h-10 w-10 flex-shrink-0 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold">
-                                                {user.name.charAt(0)}
+                            </thead>
+                            <tbody>
+                                {isLoadingUsers ? (
+                                    <tr>
+                                        <td colSpan="5" className="px-6 py-10 text-center text-sm font-medium text-gray-500">Retrieving intelligence...</td>
+                                    </tr>
+                                ) : filteredUsers.map((user) => (
+                                    <tr key={user.id} className="hover:bg-white/40 transition-colors border-b border-white/20 last:border-0 rounded-2xl overflow-hidden group">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-100 to-indigo-200 shadow-inner flex items-center justify-center text-indigo-700 font-bold border border-white/60 shrink-0">
+                                                    {user.name.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-black text-gray-800 tracking-tight">{user.name}</div>
+                                                    <div className="text-[10px] sm:text-xs font-medium text-gray-500">{user.email}</div>
+                                                </div>
                                             </div>
-                                            <div className="ml-4">
-                                                <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                                                <div className="text-sm text-gray-500">{user.email}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                                                user.role === 'teacher' ? 'bg-blue-100 text-blue-800' :
-                                                    'bg-green-100 text-green-800'
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-3 py-1 bg-white/60 backdrop-blur-sm rounded-full text-[9px] font-black tracking-wider uppercase shadow-sm border border-white/50 ${
+                                                user.role === 'admin' ? 'text-purple-700' :
+                                                user.role === 'teacher' ? 'text-blue-700' :
+                                                'text-green-700'
                                             }`}>
-                                            {user.role}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="text-sm font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded-md">
+                                                {user.role}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-[10px] sm:text-xs font-black text-gray-600 tracking-wider">
                                             {user.assignedClass || 'Unassigned'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                            }`}>
-                                            {user.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button onClick={() => handleEdit(user)} className="text-indigo-600 hover:text-indigo-900 mx-2">
-                                            <Edit2 size={18} />
-                                        </button>
-                                        <button onClick={() => handleDelete(user.id)} className="text-red-600 hover:text-red-900 mx-2">
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    {filteredUsers.length === 0 && (
-                        <div className="p-8 text-center text-gray-500">
-                            No users found matching your search criteria.
-                        </div>
-                    )}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest flex items-center gap-1">
+                                                <ShieldCheck size={14} /> {user.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                                <button onClick={() => handleEdit(user)} className="p-2 bg-white rounded-lg shadow-sm border border-white/40 text-gray-400 hover:text-indigo-600 hover:border-indigo-200 transition-colors">
+                                                    <Edit2 size={16} />
+                                                </button>
+                                                <button onClick={() => handleDelete(user.id)} className="p-2 bg-white rounded-lg shadow-sm border border-white/40 text-gray-400 hover:text-red-600 hover:border-red-200 transition-colors">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {filteredUsers.length === 0 && !isLoadingUsers && (
+                                    <tr>
+                                        <td colSpan="5" className="px-6 py-10 text-center text-sm font-medium text-gray-500">No identities match your criteria.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            {/* User Form Modal */}
+            {/* Modal - Kept functionally the same, but you could restyle Modal.jsx if needed. */}
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={selectedUser ? "Edit User" : "Add New User"}
+                title={<span className="text-2xl font-black text-gray-800 tracking-tight">{selectedUser ? "Modify Identity" : "Provision Identity"}</span>}
             >
-                <form onSubmit={handleSaveUser} className="space-y-4">
+                <form onSubmit={handleSaveUser} className="space-y-6">
                     <Input
                         label="Full Name"
                         name="userName"
@@ -329,10 +314,10 @@ const UserManagement = () => {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="flex flex-col">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                            <label className="block text-sm font-bold text-gray-700 mb-1 tracking-wider uppercase text-[10px]">Authorization Role</label>
                             <select
                                 name="userRole"
-                                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border p-2 bg-white"
+                                className="block w-full py-3 px-4 border border-gray-200 bg-gray-50 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-gray-700"
                                 value={selectedRoleForModal}
                                 onChange={(e) => setSelectedRoleForModal(e.target.value)}
                             >
@@ -342,21 +327,21 @@ const UserManagement = () => {
                             </select>
                         </div>
                         <Input
-                            label="Class/Section (e.g. CSE VIA)"
+                            label="Assignment / Section"
                             name="userClass"
                             defaultValue={selectedUser?.assignedClass || ''}
-                            placeholder="Optional"
+                            placeholder="e.g. CSE VIA"
                             disabled={selectedRoleForModal !== 'student'}
                         />
                     </div>
 
-                    <div className="flex justify-end space-x-3 mt-6">
-                        <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)} disabled={isSubmitting}>
-                            Cancel
-                        </Button>
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? 'Saving...' : 'Save User'}
-                        </Button>
+                    <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
+                        <button type="button" onClick={() => setIsModalOpen(false)} disabled={isSubmitting} className="px-6 py-3 rounded-full bg-gray-100 hover:bg-gray-200 text-xs font-black text-gray-600 uppercase tracking-widest transition-all">
+                            Abort
+                        </button>
+                        <button type="submit" disabled={isSubmitting} className="px-6 py-3 rounded-full font-black tracking-widest text-[10px] sm:text-xs text-white shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 bg-gradient-to-r from-[#FF8E75] to-[#FF5E8E] hover:shadow-[0_8px_20px_rgba(255,94,142,0.3)] uppercase">
+                            {isSubmitting ? 'Syncing...' : 'Provision Now'}
+                        </button>
                     </div>
                 </form>
             </Modal>

@@ -65,7 +65,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 <div className="h-full flex flex-col pt-5 pb-4 md:pt-0 overflow-y-auto">
                     {/* Mobile close button & brand */}
                     <div className="flex items-center justify-between px-4 mb-5 md:hidden">
-                        <div className="text-xl font-bold text-indigo-600">Menu</div>
+                        <img src="/logo_compact.png" alt="Parixa Logo" className="h-[42px] w-auto object-contain drop-shadow-sm" />
                         <button onClick={toggleSidebar} className="text-gray-500 hover:text-gray-700">
                             <X size={24} />
                         </button>

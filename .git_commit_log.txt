@@ -1,0 +1,4 @@
+﻿cbc6272 docs: build comprehensive repository README with image layout placeholders
+5833629 feat: integrate Class segregation workflows, UI component upgrades, strict anti-cheat exam tracking, and new Parixa branding
+e9afd49 feat: Implement AI-powered exam question generation from text or PDF with a new Exam model.
+ea032eb feat: Establish core full-stack application with AI-powered exam generation, user management, and authentication.

@@ -27,103 +27,149 @@ const TeacherDashboard = () => {
     }, []);
 
     const stats = [
-        { name: 'Total Exams Created', value: exams.length, icon: BookOpen, color: 'bg-indigo-500' },
-        { name: 'Active Assignments', value: exams.filter(e => e.status === 'published').length, icon: Clock, color: 'bg-yellow-500' },
-        { name: 'Recent Submissions', value: submissions.length, icon: FileText, color: 'bg-blue-500' },
-        { name: 'Avg Performance', value: submissions.length > 0 ? `${(submissions.reduce((a,b) => a+(b.score/b.totalQuestions), 0) / submissions.length * 100).toFixed(0)}%` : 'N/A', icon: CheckCircle, color: 'bg-green-500' },
+        { name: 'Total Exams Created', value: exams.length, icon: BookOpen, color: 'text-indigo-700' },
+        { name: 'Active Assignments', value: exams.filter(e => e.status === 'published').length, icon: Clock, color: 'text-amber-700' },
+        { name: 'Recent Submissions', value: submissions.length, icon: FileText, color: 'text-blue-700' },
+        { name: 'Avg Performance', value: submissions.length > 0 ? `${(submissions.reduce((a,b) => a+(b.score/b.totalQuestions), 0) / submissions.length * 100).toFixed(0)}%` : 'N/A', icon: CheckCircle, color: 'text-green-700' },
     ];
 
-    if (isLoading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div></div>;
+    if (isLoading) return (
+        <div className="flex justify-center items-center flex-col h-64 py-20">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 flex-shrink-0"></div>
+        </div>
+    );
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h1 className="text-2xl font-bold text-gray-900">Teacher Dashboard</h1>
-                <div className="flex gap-2">
-                    <Link to="/teacher/exam/create" className="bg-white text-indigo-600 border border-indigo-600 px-4 py-2 rounded-md hover:bg-indigo-50 text-sm font-medium transition-colors shadow-sm">
-                        Create Exam
-                    </Link>
-                    <Link to="/teacher/exam/schedule" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm font-medium transition-colors shadow-md">
-                        Schedule Exam
-                    </Link>
-                </div>
-            </div>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                {stats.map((item) => (
-                    <div key={item.name} className="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-100 p-6 flex items-center">
-                        <div className={`p-3 rounded-lg ${item.color} text-white`}>
-                            <item.icon size={24} />
-                        </div>
-                        <div className="ml-4">
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{item.name}</p>
-                            <p className="text-2xl font-black text-gray-900">{item.value}</p>
-                        </div>
+        <div className="pb-8">
+            <div className="p-4 sm:p-8 space-y-8 flex-1">
+                {/* Header section standardized */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-2 sm:px-4">
+                    <div className="flex flex-col gap-2">
+                        <h1 className="text-3xl sm:text-4xl font-black text-gray-800 tracking-tight">Teacher Dashboard</h1>
+                        <p className="text-sm font-medium text-gray-500">Manage your exams and student performance.</p>
                     </div>
-                ))}
-            </div>
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white shadow-sm rounded-2xl border border-gray-200 p-8 space-y-6">
-                    <h2 className="text-lg font-bold text-gray-900 border-b border-gray-50 pb-4">AI Question Lab</h2>
-                    <div className="space-y-6 text-left">
-                        <Link to="/teacher/upload-pdf" className="flex items-start group">
-                            <div className="bg-blue-100 p-3 rounded-xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                                <FileText size={20} />
-                            </div>
-                            <div className="ml-4 flex-1">
-                                <h3 className="text-md font-bold text-gray-900 group-hover:text-blue-600">PDF Intelligent Extraction</h3>
-                                <p className="text-sm text-gray-500 leading-relaxed">Turn your PDF stacks into interactive MCQ sets using ParixaAI Vision.</p>
-                            </div>
-                            <ArrowRight className="text-gray-300 group-hover:text-blue-600 transform group-hover:translate-x-1 transition-all" size={20} />
+                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                        <Link to="/teacher/exam/create" className="px-4 py-3.5 sm:py-4 rounded-full bg-white/80 hover:bg-white text-[10px] sm:text-xs font-black text-gray-600 uppercase tracking-widest shadow-sm transition-all hover:-translate-y-0.5 border border-white flex items-center justify-center">
+                            Create Exam
                         </Link>
-
-                        <Link to="/teacher/generate-syllabus" className="flex items-start group pt-6 border-t border-gray-100">
-                            <div className="bg-purple-100 p-3 rounded-xl text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-all">
-                                <BookOpen size={20} />
-                            </div>
-                            <div className="ml-4 flex-1">
-                                <h3 className="text-md font-bold text-gray-900 group-hover:text-purple-600">Syllabus-to-Exam</h3>
-                                <p className="text-sm text-gray-500 leading-relaxed">Generate context-aware questions from any text input instantly.</p>
-                            </div>
-                            <ArrowRight className="text-gray-300 group-hover:text-purple-600 transform group-hover:translate-x-1 transition-all" size={20} />
+                        <Link to="/teacher/exam/schedule" className="px-4 py-3.5 sm:py-4 rounded-full font-black tracking-widest text-[10px] sm:text-xs text-white shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 bg-gradient-to-r from-[#FF8E75] to-[#FF5E8E] hover:shadow-[0_8px_20px_rgba(255,94,142,0.3)] flex items-center justify-center gap-2 uppercase">
+                            Schedule Exam <ArrowRight size={14} className="opacity-80" />
                         </Link>
                     </div>
                 </div>
 
-                {/* Recent Submissions List */}
-                <div className="bg-white shadow-sm rounded-2xl border border-gray-200 overflow-hidden flex flex-col">
-                    <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
-                        <h2 className="text-lg font-bold text-gray-900">Recent Activity</h2>
-                        <Link to="/teacher/results" className="text-xs font-bold text-indigo-600 uppercase tracking-widest hover:text-indigo-800">View Details</Link>
-                    </div>
-                    {submissions.length === 0 ? (
-                        <div className="flex-1 flex flex-col items-center justify-center p-10 text-gray-400 italic">
-                            No submissions recorded yet.
+                {/* Stats Grid standardized */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                    {stats.map((item) => (
+                        <div key={item.name} className="bg-[#DDE2EA] rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 shadow-[inset_0_2px_10px_rgba(255,255,255,0.9),0_10px_30px_rgba(0,0,0,0.05)] relative overflow-hidden group">
+                            <div className="absolute -left-10 -top-10 w-48 h-48 bg-white/30 rounded-full filter blur-xl group-hover:bg-white/50 transition-all"></div>
+                            
+                            <div className="relative z-10 flex items-center gap-4 sm:gap-6 mb-4">
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-100 to-indigo-300 rounded-2xl shadow-xl flex items-center justify-center border-4 border-white/60 shrink-0">
+                                    <item.icon className={`w-8 h-8 sm:w-10 sm:h-10 ${item.color}`} />
+                                </div>
+                            </div>
+                            
+                            <div className="relative z-10 flex-1 flex flex-col">
+                                <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-gray-500 mb-1">{item.name}</p>
+                                <p className="text-3xl sm:text-5xl font-black text-gray-800 leading-tight">{item.value}</p>
+                            </div>
                         </div>
-                    ) : (
-                        <ul className="divide-y divide-gray-100">
-                            {submissions.map((sub) => (
-                                <li key={sub._id} className="px-8 py-5 hover:bg-gray-50 transition-colors">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <div className="bg-gray-100 p-2 rounded-lg text-gray-400"><User size={20} /></div>
-                                            <div>
-                                                <p className="text-sm font-bold text-gray-900">{sub.student?.name || 'Unknown Student'}</p>
-                                                <p className="text-xs text-gray-500">{sub.exam?.title || 'Exam'}</p>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-md font-black text-indigo-600">{sub.score}/{sub.totalQuestions}</p>
-                                            <p className="text-[10px] text-gray-400 font-bold uppercase">{new Date(sub.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                        </div>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                    ))}
+                </div>
+
+                {/* Quick Actions & Recent Submissions standardized */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    {/* AI Question Lab - Secondary Card Style */}
+                    <div className="bg-[#EBEBEF] rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 shadow-[inset_0_2px_10px_rgba(255,255,255,0.9),0_10px_30px_rgba(0,0,0,0.05)] border border-white/40 flex flex-col">
+                        <div className="flex justify-between items-center mb-6 px-2">
+                            <h3 className="text-base sm:text-lg font-black text-gray-800 uppercase tracking-wide">AI Question Lab</h3>
+                            <span className="bg-[#D1F16D] text-[#55670D] text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm">BETA</span>
+                        </div>
+                        
+                        <div className="bg-white/30 p-2 sm:p-4 rounded-3xl border border-white/50 backdrop-blur-sm flex-1 flex flex-col gap-2">
+                            <Link to="/teacher/upload-pdf" className="flex items-center gap-4 sm:gap-6 p-4 rounded-3xl hover:bg-white/60 transition-all border border-transparent hover:border-white shadow-sm hover:shadow-[inset_0_2px_5px_rgba(255,255,255,0.8)] cursor-pointer group">
+                                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-200 shadow-inner flex items-center justify-center shrink-0 border border-white/60 group-hover:scale-105 transition-transform">
+                                    <FileText className="w-6 h-6 text-blue-700" />
+                                </div>
+                                <div className="flex-1">
+                                    <h4 className="font-bold text-gray-800 mb-1 line-clamp-1">PDF Intelligent Extraction</h4>
+                                    <p className="text-[10px] sm:text-[11px] text-gray-500 font-medium line-clamp-2">Turn your PDF stacks into interactive MCQ sets using ParixaAI Vision.</p>
+                                </div>
+                                <div className="shrink-0">
+                                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-gray-800 transform group-hover:translate-x-1 transition-all" />
+                                </div>
+                            </Link>
+                            
+                            <hr className="border-white/40 w-full" />
+
+                            <Link to="/teacher/generate-syllabus" className="flex items-center gap-4 sm:gap-6 p-4 rounded-3xl hover:bg-white/60 transition-all border border-transparent hover:border-white shadow-sm hover:shadow-[inset_0_2px_5px_rgba(255,255,255,0.8)] cursor-pointer group">
+                                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-purple-100 to-purple-200 shadow-inner flex items-center justify-center shrink-0 border border-white/60 group-hover:scale-105 transition-transform">
+                                    <BookOpen className="w-6 h-6 text-purple-700" />
+                                </div>
+                                <div className="flex-1">
+                                    <h4 className="font-bold text-gray-800 mb-1 line-clamp-1">Syllabus-to-Exam</h4>
+                                    <p className="text-[10px] sm:text-[11px] text-gray-500 font-medium line-clamp-2">Generate context-aware questions from any text input instantly.</p>
+                                </div>
+                                <div className="shrink-0">
+                                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-gray-800 transform group-hover:translate-x-1 transition-all" />
+                                </div>
+                            </Link>
+
+                        </div>
+                    </div>
+
+                    {/* Recent Submissions List - Secondary Card Style */}
+                    <div className="bg-[#EBEBEF] rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 shadow-[inset_0_2px_10px_rgba(255,255,255,0.9),0_10px_30px_rgba(0,0,0,0.05)] border border-white/40 flex flex-col">
+                        <div className="flex justify-between items-center mb-6 px-2">
+                            <h3 className="text-base sm:text-lg font-black text-gray-800 uppercase tracking-wide">Recent Activity</h3>
+                            <Link to="/teacher/results" className="text-[9px] sm:text-[10px] font-black text-gray-400 hover:text-gray-600 uppercase tracking-widest transition-colors">See All Evaluated</Link>
+                        </div>
+                        
+                        <div className="bg-white/30 p-2 sm:p-4 rounded-3xl border border-white/50 backdrop-blur-sm overflow-x-auto min-h-[160px]">
+                            {submissions.length === 0 ? (
+                                <div className="text-center py-10 text-sm font-medium text-gray-500 h-full flex items-center justify-center">
+                                    No submissions recorded yet.
+                                </div>
+                            ) : (
+                                <table className="w-full text-left border-collapse min-w-[400px]">
+                                    <thead>
+                                        <tr>
+                                            <th className="px-4 py-3 text-[10px] sm:text-[11px] font-black uppercase text-gray-500 tracking-widest border-b border-white/40">Student / Exam</th>
+                                            <th className="px-4 py-3 text-[10px] sm:text-[11px] font-black uppercase text-gray-500 tracking-widest border-b border-white/40 text-right">Score</th>
+                                            <th className="px-4 py-3 text-[10px] sm:text-[11px] font-black uppercase text-gray-500 tracking-widest border-b border-white/40 text-right">Submitted</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {submissions.map((sub) => (
+                                            <tr key={sub._id} className="hover:bg-white/40 transition-colors border-b border-white/20 last:border-0 rounded-2xl overflow-hidden">
+                                                <td className="px-4 py-4">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-10 h-10 rounded-xl bg-white shadow-sm border border-white/60 flex items-center justify-center text-gray-500 flex-shrink-0">
+                                                            <User size={18} />
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-sm font-black text-gray-800 tracking-tight">{sub.student?.name || 'Unknown Student'}</div>
+                                                            <div className="text-[10px] sm:text-xs font-medium text-gray-500 line-clamp-1">{sub.exam?.title || 'Exam'}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-4 text-right">
+                                                    <div className="text-sm sm:text-base font-black text-indigo-900 bg-white/60 shadow-sm border border-white rounded-lg px-2 py-0.5 inline-block">
+                                                        {sub.score}/{sub.totalQuestions}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-4 text-right text-[10px] sm:text-xs font-black text-gray-500 tracking-wider flex items-center justify-end h-full">
+                                                    {new Date(sub.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -131,4 +177,3 @@ const TeacherDashboard = () => {
 };
 
 export default TeacherDashboard;
-

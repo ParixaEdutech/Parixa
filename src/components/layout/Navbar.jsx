@@ -28,9 +28,7 @@ const Navbar = ({ toggleSidebar }) => {
                             </button>
                         </div>
                         <div className="flex-shrink-0 flex items-center ml-4 md:ml-0">
-                            <div className="text-xl font-bold text-indigo-600 tracking-tight">
-                                Parixa
-                            </div>
+                            <img src="/logo_compact.png" alt="Parixa Logo" className="h-[42px] w-auto object-contain drop-shadow-sm" />
                         </div>
                     </div>
                     <div className="flex items-center">

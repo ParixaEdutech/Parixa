@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 
 // Layouts & Protection
 import DashboardLayout from '../components/layout/DashboardLayout';
+import StudentLayout from '../components/layout/StudentLayout';
 import ProtectedRoute from './ProtectedRoute';
 
 // Public/Auth
@@ -61,8 +62,8 @@ const AppRoutes = () => {
 
             {/* Student Routes */}
             <Route element={<ProtectedRoute allowedRoles={['student']} />}>
-                {/* Dashboard layout for student home and results */}
-                <Route path="/student" element={<DashboardLayout />}>
+                {/* Custom Glassmorphism layout for student interfaces */}
+                <Route path="/student" element={<StudentLayout />}>
                     <Route path="dashboard" element={<StudentDashboard />} />
                     <Route path="results" element={<StudentResults />} />
                     <Route path="profile" element={<Profile />} />

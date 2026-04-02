@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Award, CheckCircle, XCircle, FileText, Clock, AlertCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Award, CheckCircle, FileText, Clock, AlertCircle, Search } from 'lucide-react';
 import api from '../../services/api';
 import Modal from '../../components/common/Modal';
 
@@ -28,7 +27,6 @@ const StudentResults = () => {
         const fetchResults = async () => {
             try {
                 const res = await api.get('/exams/my-assigned-exams');
-                // Only show exams that are completed
                 setResults(res.data.filter(e => e.status === 'Completed'));
             } catch (err) {
                 console.error("Failed to load results:", err);
@@ -39,125 +37,139 @@ const StudentResults = () => {
         fetchResults();
     }, []);
 
-    if (isLoading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div></div>;
+    if (isLoading) return (
+        <div className="flex justify-center items-center flex-col h-64 py-20">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 flex-shrink-0"></div>
+        </div>
+    );
 
     return (
-        <div className="space-y-8 max-w-5xl mx-auto py-4 animate-in fade-in duration-500">
-            <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-black text-gray-900 tracking-tight">Academic Performance</h1>
-                <p className="text-gray-500 font-medium">Review your secure assessment scores and performance analytics.</p>
+        <div className="pb-8">
+            <div className="px-4 sm:px-8 py-2">
+                 <div className="flex items-center text-gray-400 text-sm sm:pl-4 w-full sm:w-64 bg-white/40 sm:bg-transparent rounded-full sm:rounded-none px-4 sm:px-0 py-2 sm:py-0">
+                     <Search size={16} className="mr-2 shrink-0" />
+                     <input type="text" placeholder="Search Past Exams" className="bg-transparent outline-none placeholder-gray-400 text-gray-700 w-full" />
+                 </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-8">
-                {results.map((result) => (
-                    <div key={result._id} className="bg-white overflow-hidden shadow-sm rounded-3xl border border-gray-200 transition-all hover:shadow-xl hover:shadow-indigo-50">
-                        <div className={`px-8 py-6 flex flex-col md:flex-row justify-between items-start md:items-center border-b ${result.score === null ? 'bg-amber-50 border-amber-100' : 'bg-gray-50 border-gray-100'}`}>
-                            <div className="flex items-center gap-4">
-                                <div className={`p-3 rounded-2xl ${result.score === null ? 'bg-amber-100 text-amber-600' : 'bg-indigo-100 text-indigo-600'}`}>
-                                    <FileText className="h-6 w-6" />
+            <div className="p-4 sm:p-8 space-y-8 flex-1">
+                <div className="flex flex-col gap-2 px-2 sm:px-4">
+                    <h1 className="text-3xl sm:text-4xl font-black text-gray-800 tracking-tight">Academic Performance</h1>
+                    <p className="text-sm font-medium text-gray-500">Review your secure assessment scores and performance analytics.</p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6">
+                    {results.map((result) => (
+                        <div key={result._id} className="bg-[#DDE2EA] rounded-[2rem] p-6 sm:p-8 shadow-[inset_0_2px_10px_rgba(255,255,255,0.9),0_10px_30px_rgba(0,0,0,0.05)] relative overflow-hidden group">
+                            <div className="absolute -left-10 -top-10 w-48 h-48 bg-white/30 rounded-full filter blur-xl group-hover:bg-white/40 transition-all"></div>
+                            
+                            <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                                <div className="flex items-center gap-4 sm:gap-6">
+                                    <div className={`w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br ${result.score !== null ? 'from-green-100 to-green-300' : 'from-gray-100 to-gray-300'} rounded-2xl shadow-xl flex items-center justify-center border-4 border-white/60 shrink-0`}>
+                                        {result.score !== null ? (
+                                            <Award className="w-8 h-8 sm:w-10 sm:h-10 text-green-700" />
+                                        ) : (
+                                            <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+                                        )}
+                                    </div>
+                                    <div>
+                                        <div className="inline-block px-3 py-1 bg-white/60 backdrop-blur-sm rounded-full text-[9px] sm:text-[10px] font-black tracking-wider uppercase mb-2 shadow-sm border border-white/50 text-gray-700">
+                                            {result.score !== null ? 'Evaluated' : 'Pending Review'}
+                                        </div>
+                                        <h3 className="text-xl sm:text-2xl font-black text-gray-800 leading-tight mb-1">{result.title}</h3>
+                                        <p className="text-[10px] sm:text-xs text-gray-500 font-medium flex items-center gap-1.5">
+                                            <Clock size={12} /> {new Date(result.startTime).toLocaleDateString()} @ {new Date(result.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {result.durationMinutes}m
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="text-left">
-                                    <h3 className="text-xl font-bold text-gray-900 leading-none mb-1">{result.title}</h3>
-                                    <p className="text-xs text-gray-500 font-bold uppercase tracking-widest flex items-center gap-2">
-                                        <Clock size={12} /> TAKEN ON: {new Date(result.startTime).toLocaleDateString()}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="mt-4 md:mt-0">
+
                                 {result.score !== null ? (
-                                    <span className="px-4 py-1.5 inline-flex text-xs leading-5 font-black uppercase tracking-widest rounded-xl bg-green-100 text-green-800 items-center gap-2 border border-green-200">
-                                        <CheckCircle size={14} /> Result Released
-                                    </span>
+                                    <div className="flex items-center gap-4 sm:gap-8 bg-white/30 p-4 sm:p-5 rounded-3xl border border-white/50 w-full md:w-auto overflow-x-auto shrink-0">
+                                        <div className="text-center shrink-0">
+                                            <p className="text-[9px] sm:text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Final Score</p>
+                                            <p className="text-2xl sm:text-3xl font-black text-indigo-900 tracking-tighter shadow-sm px-4 bg-white/60 rounded-xl py-1 border border-white">
+                                                {result.score} <span className="text-sm text-gray-500">/ {result.totalQuestions}</span>
+                                            </p>
+                                        </div>
+                                        <div className="w-[1px] h-10 bg-gray-300/50"></div>
+                                        <div className="text-center shrink-0 hidden sm:block">
+                                            <p className="text-[9px] sm:text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Accuracy</p>
+                                            <p className="text-xl sm:text-2xl font-black text-gray-800 tracking-tighter px-4 py-1.5">
+                                                {Math.round((result.score / result.totalQuestions) * 100)}%
+                                            </p>
+                                        </div>
+                                        <div className="w-[1px] h-10 bg-gray-300/50 hidden sm:block"></div>
+                                        <div className="text-center shrink-0 flex flex-col items-center">
+                                            <p className="text-[9px] sm:text-[10px] text-gray-500 font-black uppercase tracking-widest mb-2 flex items-center justify-center gap-1"><CheckCircle size={10} className="text-green-600"/> Audit Ready</p>
+                                            <button 
+                                                onClick={() => handleViewBreakdown(result._id)}
+                                                disabled={isFetchingBreakdown}
+                                                className="px-4 py-2 bg-gray-800 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl hover:-translate-y-0.5 transition-all text-center flex items-center justify-center whitespace-nowrap"
+                                            >
+                                                {isFetchingBreakdown ? 'Loading...' : 'View Detail \u2192'}
+                                            </button>
+                                        </div>
+                                    </div>
                                 ) : (
-                                    <span className="px-4 py-1.5 inline-flex text-xs leading-5 font-black uppercase tracking-widest rounded-xl bg-amber-100 text-amber-800 items-center gap-2 border border-amber-200 animate-pulse">
-                                        <AlertCircle size={14} /> Awaiting Educator Review
-                                    </span>
+                                    <div className="flex items-center justify-center bg-white/30 p-4 sm:p-5 rounded-3xl border border-white/50 border-dashed w-full md:w-auto h-[76px] sm:h-[88px]">
+                                        <div className="flex items-center gap-2 text-gray-500 font-bold text-xs sm:text-sm">
+                                            <AlertCircle size={16} className="animate-pulse" /> Awaiting Educator Verification
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Mobile View Button */}
+                                {result.score !== null && (
+                                    <button 
+                                        onClick={() => handleViewBreakdown(result._id)}
+                                        disabled={isFetchingBreakdown}
+                                        className="sm:hidden w-full py-3 bg-gray-800 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-900 shadow-lg text-center"
+                                    >
+                                        {isFetchingBreakdown ? 'Loading Audit...' : 'View Detail \u2192'}
+                                    </button>
                                 )}
                             </div>
                         </div>
+                    ))}
 
-                        <div className="p-8">
-                            {result.score !== null ? (
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                    <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100 text-center flex flex-col justify-center">
-                                        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-2">Final Score</p>
-                                        <p className="text-5xl font-black text-indigo-600 tracking-tighter">
-                                            {result.score} <span className="text-lg text-gray-300 font-bold">/ {result.totalQuestions}</span>
-                                        </p>
-                                    </div>
-                                    <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100 text-center flex flex-col justify-center">
-                                        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-2">Accuracy</p>
-                                        <p className="text-5xl font-black text-gray-900 tracking-tighter">
-                                            {Math.round((result.score / result.totalQuestions) * 100)}%
-                                        </p>
-                                    </div>
-                                    <div className="bg-indigo-900 p-6 rounded-3xl text-center flex flex-col justify-center text-white relative overflow-hidden group">
-                                        <Award className="absolute -bottom-2 -right-2 text-white opacity-5 w-24 h-24 group-hover:scale-110 transition-transform" />
-                                        <p className="text-xs text-indigo-200 font-bold uppercase tracking-widest mb-2 opacity-80">Achievement</p>
-                                        <p className="text-2xl font-black flex items-center justify-center gap-2">
-                                            {result.score / result.totalQuestions >= 0.8 ? 'Excellent 🏆' : 'Keep it up! 💪'}
-                                        </p>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="text-center py-10 px-4 bg-gray-50 rounded-3xl border border-dashed border-gray-200 flex flex-col items-center justify-center gap-3">
-                                    <div className="bg-gray-100 p-4 rounded-full text-gray-400">
-                                        <FileText size={40} className="opacity-20 translate-y-2 translate-x-1" />
-                                    </div>
-                                    <p className="text-gray-500 font-bold text-sm">Results for this assessment are securely locked by the educator.</p>
-                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">Verification in Progress</p>
-                                </div>
-                            )}
-                        </div>
-
-                        {result.score !== null && (
-                            <div className="bg-gray-50 px-8 py-4 border-t border-gray-100 flex justify-end">
-                                <button 
-                                    onClick={() => handleViewBreakdown(result._id)}
-                                    disabled={isFetchingBreakdown}
-                                    className="text-xs font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-2"
-                                >
-                                    {isFetchingBreakdown ? 'Loading Audit...' : 'View Performance Breakdown \u2192'}
-                                </button>
+                    {results.length === 0 && (
+                        <div className="bg-[#EBEBEF] rounded-[2.5rem] p-12 text-center border border-white/40 shadow-[inset_0_2px_10px_rgba(255,255,255,0.9),0_10px_30px_rgba(0,0,0,0.05)]">
+                            <div className="w-24 h-24 rounded-full bg-white/40 mx-auto flex flex-col items-center justify-center mb-6 shadow-[inset_0_2px_5px_rgba(0,0,0,0.05)] border border-white/60">
+                                <FileText className="text-gray-400 w-10 h-10" />
                             </div>
-                        )}
-                    </div>
-                ))}
-
-                {results.length === 0 && (
-                    <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
-                        <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
-                            <Clock className="text-gray-300" size={32} />
+                            <h2 className="text-2xl font-black text-gray-800 mb-2">No Past Results Found</h2>
+                            <p className="text-sm font-medium text-gray-500 max-w-sm mx-auto">Once you cleanly submit an exam and the educator finishes assessing it, your score logs will be displayed here.</p>
                         </div>
-                        <p className="text-gray-900 font-black text-xl mb-1">No Past RecordsFound</p>
-                        <p className="text-gray-400 font-medium text-sm">Once you complete an exam, your score history will appear here.</p>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Detailed Performance Audit">
+            {/* Performance modal */}
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={<span className="text-2xl font-black text-gray-800 tracking-tight">Performance Audit Log</span>}>
                 {breakdownData && (
-                    <div className="space-y-6 max-h-[60vh] overflow-y-auto p-2">
+                    <div className="space-y-4 max-h-[65vh] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-gray-300">
                         {breakdownData.answers.map((ans, idx) => {
                             const isCorrect = ans.selectedOption === ans.question?.correctAnswer;
                             return (
-                                <div key={idx} className={`p-6 bg-white border-2 rounded-3xl transition-all ${isCorrect ? 'border-green-100' : 'border-red-100 shadow-sm shadow-red-50'}`}>
-                                    <div className="flex justify-between items-start gap-4 mb-3">
-                                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Question {idx + 1}</span>
-                                        <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                            {isCorrect ? 'CORRECT' : 'INCORRECT'}
+                                <div key={idx} className={`p-6 rounded-3xl transition-all border shadow-[inset_0_2px_5px_rgba(255,255,255,0.8)] relative overflow-hidden ${isCorrect ? 'bg-[#E8F5E9] border-[#C8E6C9]' : 'bg-[#FFEBEE] border-[#FFCDD2]'}`}>
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/40 rounded-full blur-xl -translate-y-16 translate-x-16 pointer-events-none"></div>
+
+                                    <div className="flex justify-between items-start gap-4 mb-3 relative z-10">
+                                        <span className="text-xs font-black text-gray-500 uppercase tracking-widest bg-white/50 px-3 py-1 rounded-full border border-white/60 shadow-sm">Question {idx + 1}</span>
+                                        <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm border border-white/50 ${isCorrect ? 'bg-green-100/80 text-green-800' : 'bg-red-100/80 text-red-800'}`}>
+                                            {isCorrect ? '✔ CORRECT' : '✖ INCORRECT'}
                                         </span>
                                     </div>
-                                    <p className="text-md font-bold text-gray-900 mb-4">{ans.question?.text || "[Question Removed]"}</p>
+                                    <p className="text-base sm:text-lg font-bold text-gray-900 mb-5 relative z-10 leading-tight">{ans.question?.text || "[Data Redacted by Server]"}</p>
                                     
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div className={`p-3 rounded-xl border text-sm font-medium ${isCorrect ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'}`}>
-                                            <p className="text-[9px] font-black uppercase opacity-60 mb-1">Your Answer</p>
-                                            {ans.selectedOption !== undefined && ans.question?.options && ans.selectedOption >= 0 ? ans.question.options[ans.selectedOption] : "No Answer"}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10">
+                                        <div className={`p-4 rounded-2xl border text-sm font-medium shadow-[inset_0_2px_4px_rgba(255,255,255,0.6)] ${isCorrect ? 'bg-white/60 border-green-200 text-green-900' : 'bg-white/60 border-red-200 text-red-900'}`}>
+                                            <p className="text-[9px] font-black uppercase opacity-60 mb-1.5 tracking-wider">Your Selection</p>
+                                            {ans.selectedOption !== undefined && ans.question?.options && ans.selectedOption >= 0 ? ans.question.options[ans.selectedOption] : <span className="italic text-gray-400">Blank Submission</span>}
                                         </div>
                                         {!isCorrect && (
-                                            <div className="p-3 rounded-xl border border-gray-100 text-gray-600 text-sm font-medium bg-gray-50/50">
-                                                <p className="text-[9px] font-black uppercase opacity-60 mb-1">Correct Answer</p>
+                                            <div className="p-4 rounded-2xl border border-gray-200 text-gray-700 text-sm font-medium bg-white/80 shadow-[inset_0_2px_4px_rgba(255,255,255,0.8)]">
+                                                <p className="text-[9px] font-black uppercase opacity-60 mb-1.5 tracking-wider">Verified Answer</p>
                                                 {ans.question?.options ? ans.question.options[ans.question.correctAnswer] : "N/A"}
                                             </div>
                                         )}
