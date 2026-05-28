@@ -1,0 +1,23 @@
+name: Trigger Exam Reminders
+
+on:
+  schedule:
+    # Run every 5 minutes (Note: GitHub Actions scheduler can sometimes be delayed by a few minutes)
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # Allows manual trigger from the GitHub repository Actions tab
+
+jobs:
+  trigger-cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Parixa Cron Endpoint
+        run: |
+          if [ -z "${{ secrets.VERCEL_APP_URL }}" ]; then
+            echo "Error: VERCEL_APP_URL secret is not set. Please set it in GitHub repository Secrets."
+            exit 1
+          fi
+          
+          echo "Pinging Vercel endpoint..."
+          curl -f -X GET "${{ secrets.VERCEL_APP_URL }}/api/cron" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -v
