@@ -4,42 +4,53 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const { initCronJobs } = require('./utils/cronJobs');
 
-// Load environment variables
-dotenv.config();
-
-// Connect to MongoDB
-connectDB().then(async () => {
-    // Seed or Reset default Admin
-    try {
-        const User = require('./models/User');
-        let admin = await User.findOne({ email: 'admin@parixa.com' });
-        if (!admin) {
-            await User.create({
-                name: 'System Admin',
-                email: 'admin@parixa.com',
-                password: 'admin',
-                role: 'admin'
-            });
-            console.log('Default Admin Account seeded to database');
-        } else {
-            // Force reset password to 'admin' to recover from any double-hashing corruption
-            admin.password = 'admin';
-            await admin.save();
-            console.log('Default Admin Account password verified/reset to "admin"');
-        }
-        
-        // Start Background Reminders
-        initCronJobs();
-    } catch (err) {
-        console.error('Error seeding admin account:', err);
-    }
-});
+const mongoose = require('mongoose');
 
 const app = express();
+
+// Load environment variables
+dotenv.config();
 
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+
+// Database and Seeding Middleware (crucial for Serverless cold-starts on Vercel)
+let isSeeded = false;
+app.use(async (req, res, next) => {
+    try {
+        if (mongoose.connection.readyState !== 1) {
+            await connectDB();
+        }
+
+        if (!isSeeded) {
+            const User = require('./models/User');
+            let admin = await User.findOne({ email: 'admin@parixa.com' });
+            if (!admin) {
+                await User.create({
+                    name: 'System Admin',
+                    email: 'admin@parixa.com',
+                    password: 'admin',
+                    role: 'admin'
+                });
+                console.log('Default Admin Account seeded to database');
+            } else {
+                // Recover from any double-hashing corruption in the database
+                admin.password = 'admin';
+                await admin.save();
+                console.log('Default Admin Account password verified/reset to "admin"');
+            }
+
+            // Start local cron jobs for development
+            initCronJobs();
+            isSeeded = true;
+        }
+        next();
+    } catch (err) {
+        console.error('Database connection/seeding failed:', err);
+        res.status(500).json({ message: 'Database initialization failed' });
+    }
+});
 
 // Main App Routes
 app.use('/api/admin', require('./routes/adminRoutes'));
