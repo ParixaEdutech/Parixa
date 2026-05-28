@@ -402,7 +402,12 @@ router.post('/:id/schedule', protect, isEducator, async (req, res) => {
         }));
 
         // 3. Update the exam shell
-        const finalStartDateTime = new Date(`${date} ${startTime}`);
+        let finalStartDateTime;
+        if (startTime && (startTime.includes('T') || startTime.includes('Z'))) {
+            finalStartDateTime = new Date(startTime);
+        } else {
+            finalStartDateTime = new Date(`${date} ${startTime}`);
+        }
         
         exam.startTime = finalStartDateTime;
         exam.durationMinutes = parseInt(durationMinutes);

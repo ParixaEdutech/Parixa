@@ -74,10 +74,13 @@ const ScheduleExam = () => {
         if (selectedStudents.length === 0) return alert('At least 1 student must be assigned.');
 
         setIsScheduling(true);
+        const localDateTime = new Date(`${scheduleData.date}T${scheduleData.startTime}`);
+        const isoStartTime = localDateTime.toISOString();
+
         try {
             await api.post(`/exams/${selectedExamId}/schedule`, {
                 date: scheduleData.date,
-                startTime: scheduleData.startTime,
+                startTime: isoStartTime,
                 durationMinutes: scheduleData.durationMinutes,
                 entryWindowMinutes: scheduleData.windowMinutes,
                 studentIds: selectedStudents,
