@@ -39,15 +39,24 @@ const TakeExam = () => {
         }
 
         try {
+            // Request Full Screen first while the click's "user activation" is active
+            const doc = document.documentElement;
+            if (doc.requestFullscreen) {
+                await doc.requestFullscreen();
+            }
+            
+            // Request Camera access second
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
             }
             
-            const doc = document.documentElement;
-            if (doc.requestFullscreen) doc.requestFullscreen();
             setIsStarted(true);
         } catch (err) {
+            // Exit fullscreen if camera access is denied
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(e => console.log(e));
+            }
             alert("Camera access is MANDATORY for secure proctoring. Please enable it to proceed.");
             console.error(err);
         }
