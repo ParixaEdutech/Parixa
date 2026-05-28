@@ -9,11 +9,11 @@ dotenv.config();
 
 // Connect to MongoDB
 connectDB().then(async () => {
-    // Seed default Admin if it doesn't exist
+    // Seed or Reset default Admin
     try {
         const User = require('./models/User');
-        const adminExists = await User.findOne({ email: 'admin@parixa.com' });
-        if (!adminExists) {
+        let admin = await User.findOne({ email: 'admin@parixa.com' });
+        if (!admin) {
             await User.create({
                 name: 'System Admin',
                 email: 'admin@parixa.com',
@@ -21,6 +21,11 @@ connectDB().then(async () => {
                 role: 'admin'
             });
             console.log('Default Admin Account seeded to database');
+        } else {
+            // Force reset password to 'admin' to recover from any double-hashing corruption
+            admin.password = 'admin';
+            await admin.save();
+            console.log('Default Admin Account password verified/reset to "admin"');
         }
         
         // Start Background Reminders
