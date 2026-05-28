@@ -87,7 +87,7 @@ const Login = () => {
                                         value={credentials.email}
                                         onChange={handleChange}
                                         required
-                                        placeholder="admin@parixa.com"
+                                        placeholder="user@parixa.com"
                                         className="w-full pl-12 pr-4 py-3.5 bg-black/30 backdrop-blur-md border border-white/20 text-white placeholder:text-gray-400 rounded-xl focus:bg-white/10 focus:border-teal-400/60 focus:ring-1 focus:ring-teal-400/60 transition-all outline-none text-sm shadow-inner"
                                     />
                                 </div>
