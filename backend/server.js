@@ -34,11 +34,6 @@ app.use(async (req, res, next) => {
                     role: 'admin'
                 });
                 console.log('Default Admin Account seeded to database');
-            } else {
-                // Recover from any double-hashing corruption in the database
-                admin.password = 'admin';
-                await admin.save();
-                console.log('Default Admin Account password verified/reset to "admin"');
             }
 
             // Start local cron jobs for development
